@@ -1,0 +1,62 @@
+{
+  "mode": "dry-run",
+  "network": "mainnet",
+  "poll_interval_sec": 30,
+  "account_address": "",
+  "paper_equity_usd": 1000,
+  "leverage_mode": "mirror",
+  "fixed_leverage": 3,
+  "mirror_max_leverage": 10,
+  "start_skip_open": "profitable",
+  "start_skip_profit_pct": 5,
+  "leverage_cap": 5,
+  "max_notional_per_coin_usd": 2000,
+  "auto_sync": false,
+  "proportion_include_spot": true,
+  "manage_only_bot_positions": false,
+  "execution_mode": "taker",
+  "maker_wait_sec": 5,
+  "maker_max_chases": 1,
+  "maker_fallback_taker": true,
+  "min_event_delta_pct": 5,
+  "coin_whitelist": [
+    "BTC",
+    "ETH",
+    "SOL",
+    "XRP",
+    "BNB",
+    "HYPE",
+    "SUI"
+  ],
+  "skip_builder_dexs": true,
+  "binance": {
+    "network": "testnet"
+  },
+  "state_file": "state.json",
+  "events_file": "events.jsonl",
+  "copy_state_file": "copy_state.json",
+  "targets": [
+    {
+      "address": "0x1111111111111111111111111111111111111111",
+      "weight": 0.5,
+      "label": "example lead A"
+    },
+    {
+      "address": "0x2222222222222222222222222222222222222222",
+      "weight": 0.5,
+      "label": "example lead B"
+    }
+  ],
+  "data_mode": "poll",
+  "telegram": {
+    "enabled": false,
+    "chat_id": ""
+  },
+  "monitors": [],
+  "monitor_interval_sec": 30,
+  "monitor_min_delta_pct": 5,
+  "monitor_instant_notional_usd": 10000,
+  "monitor_coalesce_quiet_sec": 45,
+  "monitor_coalesce_max_sec": 300,
+  "auth_enabled": false
+}

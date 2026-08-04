@@ -1,0 +1,3 @@
+# Установка:  .venv/bin/pip install -r requirements.txt -c constraints.txt
+# (constraints зажимает ckzg==1.0.2 — у ckzg>=2 нет wheel под этот x86_64-Python)
+hyperliquid-python-sdk==0.24.0

@@ -1,0 +1,9 @@
+[Unit]
+Description=HL Copier watchdog (локальный сторож — алерты в TG, деньги не трогает)
+After=hl-copier.service
+
+[Service]
+Type=oneshot
+WorkingDirectory=%h/hl-copier
+# stdlib-only, но берём venv бота для единообразия
+ExecStart=%h/hl-copier/.venv/bin/python %h/hl-copier/watch/watchdog.py

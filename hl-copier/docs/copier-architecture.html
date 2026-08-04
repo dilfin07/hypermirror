@@ -1,0 +1,404 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Копир — карта архитектуры и риск-ядра</title>
+<style>
+  :root{
+    --bg:#0c1113; --panel:#121a1d; --panel2:#18232700; --card:#141d21; --line:#26343a;
+    --ink:#e7eef0; --ink2:#9db0b5; --ink3:#67797f;
+    --flow:#40baccff;            /* поток данных / accent */
+    --mirror:#5cbd8c;          /* пропорция / копируем / pass */
+    --guard:#d7a24c;           /* гейт / кэп / троттл */
+    --block:#d67260;           /* сокращение / закрытие / lock */
+    --ui:#40bacc;              /* редактируется в UI */
+    --code:#93a0b8;            /* захардкожено */
+    --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+    --sans:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  }
+  @media (prefers-color-scheme:light){
+    :root{
+      --bg:#eef2f1; --panel:#ffffff; --card:#ffffff; --line:#d7e0df;
+      --ink:#0f1a1d; --ink2:#4a5b60; --ink3:#7b8b8f;
+      --flow:#0f8fa3; --mirror:#2f9b66; --guard:#b57a1c; --block:#c04f3b;
+      --ui:#0f8fa3; --code:#5a6880;
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#0c1113; --panel:#121a1d; --card:#141d21; --line:#26343a;
+    --ink:#e7eef0; --ink2:#9db0b5; --ink3:#67797f;
+    --flow:#40bacc; --mirror:#5cbd8c; --guard:#d7a24c; --block:#d67260; --ui:#40bacc; --code:#93a0b8;
+  }
+  :root[data-theme="light"]{
+    --bg:#eef2f1; --panel:#ffffff; --card:#ffffff; --line:#d7e0df;
+    --ink:#0f1a1d; --ink2:#4a5b60; --ink3:#7b8b8f;
+    --flow:#0f8fa3; --mirror:#2f9b66; --guard:#b57a1c; --block:#c04f3b; --ui:#0f8fa3; --code:#5a6880;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);
+    line-height:1.55;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:1180px;margin:0 auto;padding:clamp(20px,4vw,56px) clamp(16px,3vw,32px) 80px}
+  .mono{font-family:var(--mono)}
+  .eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--ink3)}
+  h1{font-size:clamp(26px,4.4vw,42px);line-height:1.08;margin:.35em 0 .2em;text-wrap:balance;font-weight:700;letter-spacing:-.02em}
+  h2{font-size:clamp(17px,2.4vw,21px);margin:0;font-weight:650;letter-spacing:-.01em}
+  .lead{color:var(--ink2);max-width:64ch;font-size:15.5px}
+  .accent{color:var(--flow)}
+
+  /* header */
+  header{border-bottom:1px solid var(--line);padding-bottom:26px;margin-bottom:34px}
+  .themebtn{position:fixed;top:14px;right:14px;z-index:9;font-family:var(--mono);font-size:11px;
+    letter-spacing:.1em;background:var(--card);color:var(--ink2);border:1px solid var(--line);
+    border-radius:7px;padding:7px 11px;cursor:pointer}
+  .themebtn:hover{color:var(--ink);border-color:var(--flow)}
+
+  /* legend */
+  .legend{display:flex;flex-wrap:wrap;gap:8px 16px;margin-top:22px}
+  .lg{display:flex;align-items:center;gap:7px;font-family:var(--mono);font-size:11.5px;color:var(--ink2)}
+  .dot{width:11px;height:11px;border-radius:3px;flex:none}
+  .badge{display:inline-flex;align-items:center;gap:5px;font-family:var(--mono);font-size:10px;
+    letter-spacing:.08em;padding:2px 7px;border-radius:5px;border:1px solid;text-transform:uppercase;white-space:nowrap}
+  .b-ui{color:var(--ui);border-color:color-mix(in srgb,var(--ui) 45%,transparent);background:color-mix(in srgb,var(--ui) 10%,transparent)}
+  .b-code{color:var(--code);border-color:color-mix(in srgb,var(--code) 40%,transparent);background:color-mix(in srgb,var(--code) 8%,transparent)}
+
+  section{margin-top:40px}
+  .shead{display:flex;align-items:baseline;gap:14px;margin-bottom:18px;flex-wrap:wrap}
+  .snum{font-family:var(--mono);font-size:12px;color:var(--flow);border:1px solid color-mix(in srgb,var(--flow) 40%,transparent);
+    border-radius:6px;padding:2px 8px;flex:none}
+  .sdesc{color:var(--ink3);font-size:13px;margin-left:auto;max-width:44ch;text-align:right}
+
+  /* source cards */
+  .sources{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  @media(max-width:640px){.sources{grid-template-columns:1fr}}
+  .src{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px 20px}
+  .src h3{margin:0 0 3px;font-size:15px}
+  .src .tag{font-family:var(--mono);font-size:11px;color:var(--flow)}
+  .src ul{margin:12px 0 0;padding:0;list-style:none;display:flex;flex-direction:column;gap:7px}
+  .src li{font-size:13px;color:var(--ink2);padding-left:16px;position:relative}
+  .src li::before{content:"";position:absolute;left:0;top:8px;width:6px;height:6px;border-radius:50%;background:var(--flow);opacity:.6}
+  .truth{margin-top:14px;border:1px dashed color-mix(in srgb,var(--mirror) 50%,transparent);border-radius:10px;
+    padding:12px 16px;background:color-mix(in srgb,var(--mirror) 7%,transparent);font-size:13px;color:var(--ink2)}
+  .truth b{color:var(--mirror)}
+
+  /* loop strip */
+  .loop{display:flex;flex-wrap:wrap;gap:0;align-items:stretch;border:1px solid var(--line);border-radius:12px;overflow:hidden;background:var(--card)}
+  .step{flex:1 1 140px;padding:14px 16px;border-right:1px solid var(--line);min-width:135px}
+  .step:last-child{border-right:none}
+  .step .k{font-family:var(--mono);font-size:10.5px;color:var(--flow);letter-spacing:.05em}
+  .step .t{font-weight:600;font-size:13.5px;margin:5px 0 3px}
+  .step .d{font-size:12px;color:var(--ink3);line-height:1.4}
+
+  /* pipeline */
+  .pipe{display:flex;flex-direction:column;gap:0;position:relative}
+  .stage{display:grid;grid-template-columns:44px 1fr;gap:0;position:relative}
+  .rail{display:flex;flex-direction:column;align-items:center}
+  .rail .n{font-family:var(--mono);font-size:13px;font-weight:600;width:30px;height:30px;border-radius:50%;
+    display:grid;place-items:center;background:var(--card);border:1px solid var(--line);color:var(--ink);z-index:2}
+  .rail .ln{width:2px;flex:1;background:linear-gradient(var(--line),var(--line));margin:2px 0;min-height:14px}
+  .stage:last-child .rail .ln{display:none}
+  .scard{background:var(--card);border:1px solid var(--line);border-radius:11px;padding:15px 18px;margin:0 0 12px 12px;
+    flex:1;border-left:3px solid var(--sc,var(--flow))}
+  .stage.mirror .scard{--sc:var(--mirror)} .stage.mirror .n{color:var(--mirror);border-color:color-mix(in srgb,var(--mirror) 55%,transparent)}
+  .stage.guard .scard{--sc:var(--guard)} .stage.guard .n{color:var(--guard);border-color:color-mix(in srgb,var(--guard) 55%,transparent)}
+  .stage.block .scard{--sc:var(--block)} .stage.block .n{color:var(--block);border-color:color-mix(in srgb,var(--block) 55%,transparent)}
+  .scard .top{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:7px}
+  .scard .top h3{margin:0;font-size:14.5px;font-weight:640}
+  .scard .cond{font-family:var(--mono);font-size:12px;color:var(--ink2);background:color-mix(in srgb,var(--ink3) 12%,transparent);
+    border-radius:6px;padding:8px 11px;margin:8px 0;overflow-x:auto;white-space:nowrap}
+  .scard p{margin:6px 0 0;font-size:13px;color:var(--ink2)}
+  .lever{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:10px}
+  .chip{font-family:var(--mono);font-size:11px;padding:3px 9px;border-radius:6px;border:1px solid var(--line);color:var(--ink2)}
+  .chip b{color:var(--ink);font-weight:600}
+  .val{font-family:var(--mono);font-size:11px;padding:3px 9px;border-radius:6px;
+    background:color-mix(in srgb,var(--flow) 12%,transparent);border:1px solid color-mix(in srgb,var(--flow) 30%,transparent);color:var(--flow)}
+  .val.off{background:color-mix(in srgb,var(--ink3) 12%,transparent);border-color:var(--line);color:var(--ink3)}
+
+  /* gates grid */
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  @media(max-width:720px){.grid2{grid-template-columns:1fr}}
+  .gate{background:var(--card);border:1px solid var(--line);border-radius:11px;padding:16px 18px;border-top:2px solid var(--gc,var(--flow))}
+  .gate.g{--gc:var(--guard)} .gate.b{--gc:var(--block)} .gate.m{--gc:var(--mirror)}
+  .gate h3{margin:0 0 4px;font-size:14px;display:flex;gap:9px;align-items:center;flex-wrap:wrap}
+  .gate .flow{font-family:var(--mono);font-size:12px;color:var(--ink2);margin:9px 0}
+  .gate .flow .y{color:var(--mirror)} .gate .flow .n{color:var(--block)}
+  .gate p{margin:6px 0 0;font-size:12.5px;color:var(--ink3)}
+
+  /* compare */
+  .cmp{width:100%;border-collapse:collapse;font-size:13px;border:1px solid var(--line);border-radius:12px;overflow:hidden}
+  .cmp th,.cmp td{padding:11px 14px;text-align:left;border-bottom:1px solid var(--line);vertical-align:top}
+  .cmp thead th{font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink3);background:color-mix(in srgb,var(--ink3) 7%,transparent)}
+  .cmp tr:last-child td{border-bottom:none}
+  .cmp .us{color:var(--mirror)} .cmp .them{color:var(--ink3)}
+  .cmp td:first-child{font-weight:600;color:var(--ink)}
+  .scrollx{overflow-x:auto}
+
+  /* config snapshot */
+  .cfg{display:grid;grid-template-columns:repeat(auto-fill,minmax(215px,1fr));gap:9px}
+  .kv{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:9px 12px;display:flex;justify-content:space-between;align-items:center;gap:10px}
+  .kv .k{font-family:var(--mono);font-size:11.5px;color:var(--ink3)}
+  .kv .v{font-family:var(--mono);font-size:12px;color:var(--ink);font-weight:600;text-align:right}
+  .kv.hl{border-color:color-mix(in srgb,var(--flow) 40%,transparent)}
+  .kv.hl .v{color:var(--flow)}
+
+  footer{margin-top:46px;padding-top:20px;border-top:1px solid var(--line);color:var(--ink3);font-size:12px;font-family:var(--mono)}
+  @media (prefers-reduced-motion:no-preference){
+    .stage,.src,.step,.gate{animation:rise .5s cubic-bezier(.2,.7,.3,1) backwards}
+    @keyframes rise{from{opacity:0;transform:translateY(8px)}}
+  }
+</style>
+</head>
+<body>
+<button class="themebtn" onclick="var r=document.documentElement,d=(r.getAttribute('data-theme')||(matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light'));r.setAttribute('data-theme',d==='dark'?'light':'dark')">◐ ТЕМА</button>
+
+<div class="wrap">
+  <header>
+    <div class="eyebrow">HL → Binance · копи-движок · срез прода 2026-08-04</div>
+    <h1>Как работает наш копир<span class="accent">.</span></h1>
+    <p class="lead">Механически он прост: читаем лида → считаем пропорцию → сводим нашу позицию → исполняем.
+    Отличие от биржевых копиров — не в механике, а в <span class="accent">риск-ядре</span>: восемь фильтров в строгом порядке
+    между «что делает лид» и «что делаем мы».</p>
+    <div class="legend">
+      <span class="lg"><span class="dot" style="background:var(--flow)"></span>поток данных</span>
+      <span class="lg"><span class="dot" style="background:var(--mirror)"></span>пропорция / копируем</span>
+      <span class="lg"><span class="dot" style="background:var(--guard)"></span>гейт / кэп / троттл</span>
+      <span class="lg"><span class="dot" style="background:var(--block)"></span>сокращение / выход / lock</span>
+      <span class="lg"><span class="badge b-ui">UI</span>крутится в интерфейсе</span>
+      <span class="lg"><span class="badge b-code">CODE</span>захардкожено</span>
+    </div>
+  </header>
+
+  <!-- ISTOCHNIKI -->
+  <section>
+    <div class="shead"><span class="snum">A</span><h2>Вход: два источника, биржа — эталон</h2>
+      <span class="sdesc">лид с Hyperliquid, наша позиция — с Binance по факту</span></div>
+    <div class="sources">
+      <div class="src">
+        <h3>Лид (цель)</h3>
+        <div class="tag">Hyperliquid · clearinghouseState</div>
+        <ul>
+          <li>Позиции, плечо, средняя входа цели</li>
+          <li>База пропорции = <span class="mono">max(перп-эквити, спот-USDC)</span> — не сумма (иначе двойной счёт)</li>
+          <li>TWAP-набор виден как рост чистой позиции → мы за ним следуем</li>
+          <li>Поток: <span class="mono">ws</span> (мгновенно) · опрос 30с</li>
+        </ul>
+      </div>
+      <div class="src">
+        <h3>Мы (счёт)</h3>
+        <div class="tag">Binance · positionRisk / account</div>
+        <ul>
+          <li>Наша реальная позиция и эквити — <b>всегда с биржи</b></li>
+          <li>Атрибуция бот/ручное: <span class="mono">_bot_orders</span>, <span class="mono">_bot_pos</span></li>
+          <li>Сверка каждый тик: цель ↔ факт → дельта</li>
+        </ul>
+      </div>
+    </div>
+    <div class="truth"><b>Принцип:</b> биржа — источник истины. Позиция берётся из <span class="mono">positionRisk</span>, а не из
+    внутреннего учёта — поэтому нет «призрачных» и «зомби»-позиций, которые ведёт бот, а на бирже их нет.</div>
+  </section>
+
+  <!-- TICK LOOP -->
+  <section>
+    <div class="shead"><span class="snum">B</span><h2>Цикл тика</h2>
+      <span class="sdesc">что происходит каждые 30с / на ws-событие лида</span></div>
+    <div class="loop">
+      <div class="step"><div class="k">01 · READ</div><div class="t">Снимок</div><div class="d">Состояние лида (HL) + наша позиция (Binance)</div></div>
+      <div class="step"><div class="k">02 · ADOPT</div><div class="t">Подхват <span class="badge b-code" style="font-size:8px">CODE</span></div><div class="d">На старте/рестарте берём позу как есть, тик НЕ исполняем — следуем только за новыми движениями</div></div>
+      <div class="step"><div class="k">03 · PLAN</div><div class="t">Риск-ядро</div><div class="d">compute_plan → желаемые позиции (см. секцию C)</div></div>
+      <div class="step"><div class="k">04 · DIFF</div><div class="t">Сведение</div><div class="d">delta = цель − факт по каждой ноге (hedge)</div></div>
+      <div class="step"><div class="k">05 · GATE</div><div class="t">Фильтры</div><div class="d">favorability, auto_sync, round-up (секция D)</div></div>
+      <div class="step"><div class="k">06 · APPLY</div><div class="t">Исполнение</div><div class="d">maker-first / taker (секция E)</div></div>
+    </div>
+  </section>
+
+  <!-- RISK CORE -->
+  <section>
+    <div class="shead"><span class="snum">C</span><h2>Риск-ядро — конвейер из 8 фильтров</h2>
+      <span class="sdesc">порядок важен: каждый следующий работает с результатом предыдущего</span></div>
+    <div class="pipe">
+
+      <div class="stage mirror">
+        <div class="rail"><div class="n">1</div><div class="ln"></div></div>
+        <div class="scard">
+          <div class="top"><h3>Честная пропорция</h3><span class="badge b-code">CODE</span></div>
+          <div class="cond">contrib = размер_лида × mark × (наш_рукав / база_лида)</div>
+          <p>Копируем <b>долю от банка лида</b>, а не фиксированный объём/коэффициент. Если лид открыл на 2% своего капитала — у нас тоже ≈2% нашего.</p>
+          <div class="lever"><span class="chip">база: <b>max(перп, спот)</b></span><span class="badge b-ui">UI</span><span class="chip">proportion_include_spot</span><span class="val">on</span></div>
+        </div>
+      </div>
+
+      <div class="stage guard">
+        <div class="rail"><div class="n">2</div><div class="ln"></div></div>
+        <div class="scard">
+          <div class="top"><h3>Заморозка на старте</h3><span class="badge b-ui">UI</span></div>
+          <div class="cond">if move_pct ≥ порог при adopt → coin заморожен</div>
+          <p>Позиции лида, которые на момент подхвата уже в хорошем плюсе, <b>не копируем</b> — не запрыгиваем в уехавшую сделку. Разморозка, когда лид её закроет.</p>
+          <div class="lever"><span class="chip">start_skip_open <b>profitable</b></span><span class="chip">start_skip_profit_pct <b>5%</b></span><span class="val">актив</span></div>
+        </div>
+      </div>
+
+      <div class="stage guard">
+        <div class="rail"><div class="n">3</div><div class="ln"></div></div>
+        <div class="scard">
+          <div class="top"><h3>Фильтр монет</h3><span class="badge b-ui">UI</span></div>
+          <div class="cond">whitelist ∧ (skip_builder → пропустить «xyz:»)</div>
+          <p>Whitelist ограничивает набор монет; builder-dex перпы (нефть/акции/pre-IPO) можно скипать — их на Binance нет.</p>
+          <div class="lever"><span class="chip">coin_whitelist <b>пусто (copy-all)</b></span><span class="chip">skip_builder_dexs <b>off</b></span></div>
+        </div>
+      </div>
+
+      <div class="stage guard">
+        <div class="rail"><div class="n">4</div><div class="ln"></div></div>
+        <div class="scard">
+          <div class="top"><h3>Кэп на монету</h3><span class="badge b-ui">UI</span></div>
+          <div class="cond">|notional[coin]| ≤ max_notional_per_coin_usd</div>
+          <p>Потолок экспозиции в одну монету — чтобы один инструмент не занял весь риск.</p>
+          <div class="lever"><span class="chip">max_notional_per_coin_usd</span><span class="val">$50 000</span></div>
+        </div>
+      </div>
+
+      <div class="stage mirror">
+        <div class="rail"><div class="n">5</div><div class="ln"></div></div>
+        <div class="scard">
+          <div class="top"><h3>Множитель размера</h3><span class="badge b-ui">UI</span></div>
+          <div class="cond">notional × size_multiplier   (≤0 → трактуем как ×1)</div>
+          <p>Масштабирует пропорцию лида <b>перед</b> кэпом плеча. ×1 — точная пропорция; 0.5 — половина; 2 — вдвое агрессивнее.</p>
+          <div class="lever"><span class="chip">size_multiplier</span><span class="val off">×1.0 (default)</span></div>
+        </div>
+      </div>
+
+      <div class="stage block">
+        <div class="rail"><div class="n">6</div><div class="ln"></div></div>
+        <div class="scard">
+          <div class="top"><h3>Кэп плеча (гросс)</h3><span class="badge b-ui">UI</span><span class="badge b-code">лог: «ужал x…»</span></div>
+          <div class="cond">if gross &gt; equity × leverage_cap → ужать всё пропорц.  ·  ≤0 = БЕЗ кэпа</div>
+          <p>Главный предохранитель малого счёта: ограничивает <b>суммарную</b> экспозицию. Лид на 467% — мы clamp'нуты до 3×. <span style="color:var(--block)">0 = полный миррор риска лида.</span></p>
+          <div class="lever"><span class="chip">leverage_cap</span><span class="val">3× гросс</span></div>
+        </div>
+      </div>
+
+      <div class="stage mirror">
+        <div class="rail"><div class="n">7</div><div class="ln"></div></div>
+        <div class="scard">
+          <div class="top"><h3>Плечо на позицию</h3><span class="badge b-ui">UI</span></div>
+          <div class="cond">mirror: min(плечо_лида, mirror_max_leverage) · fixed: fixed_leverage</div>
+          <p>Режим <b>mirror</b> берёт плечо лида (с потолком); <b>fixed</b> — своё фиксированное. Влияет на маржу позиции, не на её размер.</p>
+          <div class="lever"><span class="chip">leverage_mode <b>mirror</b></span><span class="chip">mirror_max_leverage <b>100</b></span><span class="chip">fixed_leverage <b>5</b></span></div>
+        </div>
+      </div>
+
+      <div class="stage block">
+        <div class="rail"><div class="n">8</div><div class="ln"></div></div>
+        <div class="scard">
+          <div class="top"><h3>Маржинальный буфер</h3><span class="badge b-code">CODE · хардкод 10%</span></div>
+          <div class="cond">if req_margin &gt; equity × (1 − buf) → ужать размер</div>
+          <p>Никогда не занимаем 100% маржи — оставляем запас под комиссию/проскальзывание, иначе биржа отклонит открытие (<span class="mono">-2019</span>). Единственный рычаг риск-ядра, которого <b>нет в UI</b>.</p>
+          <div class="lever"><span class="chip">margin_buffer_pct</span><span class="val off">0.10 (хардкод)</span></div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- GATES -->
+  <section>
+    <div class="shead"><span class="snum">D</span><h2>Гейты сведения — где решается «слать ордер или нет»</h2>
+      <span class="sdesc">после плана, перед исполнением</span></div>
+    <div class="grid2">
+      <div class="gate g">
+        <h3>Favorability-гейт <span class="badge b-ui">UI</span></h3>
+        <div class="flow"><span class="y">УВЕЛИЧЕНИЕ</span> (открытие/долив): пропустить, если цена хуже входа лида &gt; tol%</div>
+        <div class="flow"><span class="n">СОКРАЩЕНИЕ / ЗАКРЫТИЕ</span>: гейт НЕ трогает — выход за лидом всегда проходит</div>
+        <p>Бережёт твою среднюю: не докупаем сильно выше средней лида. tol=1% → добор разрешён пока цена ≤ вход +1%. Это и есть причина «доливок по хорошей цене».</p>
+        <div class="lever" style="margin-top:12px"><span class="chip">favorability_gate <b>on</b></span><span class="chip">favorability_tol_pct</span><span class="val">1%</span></div>
+      </div>
+      <div class="gate g">
+        <h3>Auto-sync <span class="badge b-ui">UI</span></h3>
+        <div class="flow"><span class="y">Движение лида</span> (target изменился) → применяем сразу</div>
+        <div class="flow"><span class="n">Догон дрейфа</span> (лид не двигался, разошлись мы) → откладываем до кнопки «Синхронизировать»</div>
+        <p>При <b>off</b> бот не откупает твои ручные тримы «в плюс» — следует только за новыми движениями лида. Твой ручной оверлей уважается.</p>
+        <div class="lever" style="margin-top:12px"><span class="chip">auto_sync</span><span class="val off">off</span></div>
+      </div>
+      <div class="gate m">
+        <h3>Round-up минимума <span class="badge b-ui">UI</span></h3>
+        <div class="flow">суб-минимальное <span class="y">ОТКРЫТИЕ</span> ноги → поднять до minNotional</div>
+        <div class="flow">прочие суб-мин правки → dead-band (не дёргаем)</div>
+        <p>Иначе мелкую ногу лида не скопировать вовсе. Округление к шагу лота — тут же был фикс -1111 (float-хвост).</p>
+        <div class="lever" style="margin-top:12px"><span class="chip">min_notional_roundup</span><span class="val">on</span></div>
+      </div>
+      <div class="gate b">
+        <h3>Область управления <span class="badge b-ui">UI</span></h3>
+        <div class="flow"><b>off</b> → бот ведёт <span class="y">всю</span> позицию как копию</div>
+        <div class="flow"><b>on</b> → реконсилит <span class="n">только</span> свою суб-позицию, ручное не трогает</div>
+        <p>Определяет, считать ли твои ручные сделки частью копии или отдельным «карманом».</p>
+        <div class="lever" style="margin-top:12px"><span class="chip">manage_only_bot_positions</span><span class="val off">off</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- EXECUTION -->
+  <section>
+    <div class="shead"><span class="snum">E</span><h2>Исполнение</h2>
+      <span class="sdesc">maker-first с фолбэком, полное закрытие — всегда тейкер</span></div>
+    <div class="loop">
+      <div class="step"><div class="k">MAKER</div><div class="t">Лимитка GTX</div><div class="d">Пассивная сторона, post-only. Ждём maker_wait_sec, гоняем maker_max_chases раз</div></div>
+      <div class="step"><div class="k">FALLBACK</div><div class="t">Тейкер на остаток</div><div class="d">Не добрали мейкером → добираем рынком (если fallback on)</div></div>
+      <div class="step"><div class="k">CLOSE</div><div class="t">Полный выход <span class="badge b-code" style="font-size:8px">CODE</span></div><div class="d">target≈0 → всегда тейкер: гарантия выхода за лидом</div></div>
+      <div class="step"><div class="k">HEDGE</div><div class="t">reduceOnly / positionSide</div><div class="d">Корректная сторона, без «переворота» случайно</div></div>
+    </div>
+    <div class="lever" style="margin-top:14px">
+      <span class="chip">execution_mode <b>maker</b></span><span class="badge b-ui">UI</span>
+      <span class="chip">maker_wait_sec <b>5</b></span><span class="chip">maker_max_chases <b>1</b></span><span class="chip">maker_fallback_taker <b>on</b></span>
+    </div>
+  </section>
+
+  <!-- COMPARE -->
+  <section>
+    <div class="shead"><span class="snum">F</span><h2>Чем мы отличаемся от биржевого копира</h2>
+      <span class="sdesc">риск-ядро вместо тупого %-стопа</span></div>
+    <div class="scrollx">
+      <table class="cmp">
+        <thead><tr><th>Аспект</th><th>Наш копир</th><th>Биржевой (Binance / Bybit copy)</th></tr></thead>
+        <tbody>
+          <tr><td>Сайзинг</td><td class="us">честная пропорция от полного банка лида + множитель</td><td class="them">фикс-коэффициент или фикс-сумма</td></tr>
+          <tr><td>Плечо лида</td><td class="us">кэп гросс-экспозиции (3×) + буфер маржи 10%</td><td class="them">берёт как есть, защита — только %-стоп</td></tr>
+          <tr><td>Защита от убытка</td><td class="us">пересиживаем с лидом; выход = его выход; ручной оверлей</td><td class="them">тупой стоп «-N%» — режет в худшей точке перед разворотом</td></tr>
+          <tr><td>Вход по плохой цене</td><td class="us">favorability-гейт бережёт среднюю</td><td class="them">копирует по любой цене</td></tr>
+          <tr><td>Ручное вмешательство</td><td class="us">auto_sync off — уважает твои тримы, не откупает</td><td class="them">конфликтует / перетирает</td></tr>
+          <tr><td>Целостность</td><td class="us">биржа = эталон, нет зомби-позиций</td><td class="them">внутренний учёт, возможен рассинхрон</td></tr>
+          <tr><td>Экзотика</td><td class="us">skip builder-dex / whitelist</td><td class="them">только что даёт биржа</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- CONFIG SNAPSHOT -->
+  <section>
+    <div class="shead"><span class="snum">G</span><h2>Срез прода сейчас</h2>
+      <span class="sdesc">счёт public-copy · лид 0x7fba «на заметку»</span></div>
+    <div class="cfg">
+      <div class="kv hl"><span class="k">leverage_cap</span><span class="v">3× гросс</span></div>
+      <div class="kv hl"><span class="k">favorability_tol</span><span class="v">1%</span></div>
+      <div class="kv"><span class="k">leverage_mode</span><span class="v">mirror</span></div>
+      <div class="kv"><span class="k">mirror_max_lev</span><span class="v">100</span></div>
+      <div class="kv"><span class="k">margin_buffer</span><span class="v">10% · code</span></div>
+      <div class="kv"><span class="k">size_multiplier</span><span class="v">×1.0</span></div>
+      <div class="kv"><span class="k">max/монету</span><span class="v">$50 000</span></div>
+      <div class="kv"><span class="k">favorability_gate</span><span class="v">on</span></div>
+      <div class="kv"><span class="k">auto_sync</span><span class="v">off</span></div>
+      <div class="kv"><span class="k">manage_only_bot</span><span class="v">off</span></div>
+      <div class="kv"><span class="k">proportion_spot</span><span class="v">on</span></div>
+      <div class="kv"><span class="k">skip_builder_dexs</span><span class="v">off</span></div>
+      <div class="kv"><span class="k">execution_mode</span><span class="v">maker</span></div>
+      <div class="kv"><span class="k">start_skip</span><span class="v">profit &gt;5%</span></div>
+      <div class="kv"><span class="k">whitelist</span><span class="v">copy-all</span></div>
+      <div class="kv"><span class="k">поток / опрос</span><span class="v">ws · 30с</span></div>
+    </div>
+  </section>
+
+  <footer>
+    порядок фильтров: plan.py (1–8) → executor гейты (D) → apply (E) · UI-редактируемое: PER_ACCOUNT + GLOBAL · хардкод: буфер маржи, adopt, auto-sync-детект, точность ордера, full-close-taker
+  </footer>
+</div>
+</body>
+</html>

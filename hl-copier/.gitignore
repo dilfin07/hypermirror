@@ -1,0 +1,15 @@
+# секреты — НИКОГДА в git
+.env
+*.key
+config/config.json
+
+# состояние/логи (рантайм)
+runtime/
+
+# python
+__pycache__/
+*.pyc
+.venv/
+web/node_modules/
+web/dist/
+config/config_test.json

@@ -1,0 +1,11 @@
+[Unit]
+Description=HL Copier watchdog — запуск каждые 15 минут
+
+[Timer]
+OnBootSec=3min
+OnUnitActiveSec=15min
+AccuracySec=30s
+Unit=hl-watchdog.service
+
+[Install]
+WantedBy=timers.target

@@ -1,0 +1,35 @@
+# === секреты — НИКОГДА в git ===
+.env
+.env.local
+.env.*.local
+*.key
+# боевые цели/значения (не секрет, но личное)
+hl-copier/config/config.json
+
+# === рантайм/состояние/логи ===
+runtime/
+
+# === python ===
+.venv/
+venv/
+__pycache__/
+*.pyc
+
+# === node / фронт ===
+node_modules/
+dist/
+# сборка нового UI (прототип) — артефакт, пересобирается deploy.sh --build
+hl-copier/web/v2/
+
+# === claude (личные локальные настройки) ===
+.claude/settings.local.json
+
+# === macOS ===
+.DS_Store
+
+# внутренние рабочие заметки (не для публики)
+AUDIT.md
+HANDOFF-FABLE.md
+START-HERE.md
+TODO.md
+hl-copier/NEXT-SESSION.md
