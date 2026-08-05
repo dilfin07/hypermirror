@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Group, Text, Anchor, Tooltip } from '@mantine/core'
+import { Group, Text, Anchor } from '@mantine/core'
 import { FileText, Clock, Heart } from '@phosphor-icons/react'
 import { usePrefs } from '../settings/prefs'
 import { useT, TIMEZONES } from '../settings/i18n'
@@ -30,11 +30,9 @@ export default function Footer() {
       <Group gap="md" wrap="nowrap">
         <Text size="xs" c="dimmed">{t('footer.copyright')}</Text>
         <TzClock />
-        <Tooltip label={t('footer.support.tip')} multiline w={280} withArrow position="top">
-          <Anchor size="xs" c="dimmed" underline="never" href={REFERRAL_URL} target="_blank" rel="noopener">
-            <Group gap={5} wrap="nowrap"><Heart size={13} weight="fill" color="var(--mantine-color-pink-5)" />{t('footer.support')}</Group>
-          </Anchor>
-        </Tooltip>
+        <Anchor size="xs" c="dimmed" underline="never" href={REFERRAL_URL} target="_blank" rel="noopener">
+          <Group gap={5} wrap="nowrap"><Heart size={13} weight="fill" color="var(--mantine-color-pink-5)" />{t('footer.support')}</Group>
+        </Anchor>
       </Group>
       <Anchor size="xs" c="dimmed" underline="never" href={`${import.meta.env.BASE_URL}docs.html`} target="_blank" rel="noopener">
         <Group gap={5} wrap="nowrap"><FileText size={14} />{t('footer.docs')}</Group>
