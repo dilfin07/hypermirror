@@ -2,6 +2,7 @@
 
 Единственное место, которое трогает Binance. API дёргает его методы.
 """
+import html
 import itertools
 import json
 import os
@@ -57,6 +58,7 @@ class Controller(EngineMixin, MonitorMixin, StatusMixin, TelegramMixin, JournalM
         self._spot_cache = {}      # addr -> (ts, spot_usd) для честной пропорции (TTL 60с)
         self._tg_queue = queue.PriorityQueue(maxsize=1000)  # очередь отправки в TG: копи/управление вперёд, монитор после; протухший монитор дропается
         self._tg_seq = itertools.count()  # стабильный порядок внутри приоритета (FIFO при равном prio)
+        self._tg_dedup = {}        # текст -> (ts последней отправки, сколько повторов подавлено)
         self._tg_ok_ts = 0         # ts последней УСПЕШНОЙ отправки в TG (health-пайплайна)
         self._tg_fail = None       # {ts, err} последней неудачной отправки в TG
         self._fill_stream = None       # None=не пробовали · False=init упал (ретрай по кулдауну) · объект=живой
@@ -351,7 +353,10 @@ class Controller(EngineMixin, MonitorMixin, StatusMixin, TelegramMixin, JournalM
         if level == "trade":
             self._tg_send(f"📋 <b>Copied</b>\n{msg}")
         elif level == "error":
-            self._tg_send(f"❌ <b>Error</b>\n{msg}")
+            # escape: в текст ошибки попадает «<urlopen error ...>» — Telegram считает это
+            # битой разметкой, отбивает 400, и сообщение уходит повтором уже без parse_mode
+            # (в чате видны сырые теги). ttl — не доставлять протухшее после долгого обрыва.
+            self._tg_send(f"❌ <b>Error</b>\n{html.escape(str(msg))}", ttl=self.TG_ERROR_TTL, dedup=True)
 
     # Telegram (_tg_send / команды / _restart / set_telegram / test_telegram) → TelegramMixin (server/_telegram.py)
 

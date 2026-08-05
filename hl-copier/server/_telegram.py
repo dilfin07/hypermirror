@@ -39,16 +39,37 @@ class TelegramMixin:
         [{"text": "📊 Status"}, {"text": "🚨 PANIC"}],
     ], "resize_keyboard": True, "is_persistent": True}
 
-    def _tg_send(self, text, reply_markup=None, kind="copy", ttl=None):
+    TG_DEDUP_SEC = 300     # окно подавления ОДИНАКОВЫХ сообщений (ошибка повторяется каждый тик)
+    TG_ERROR_TTL = 900     # ошибка, отлежавшая в очереди дольше — стейл, доставлять не надо
+
+    def _tg_send(self, text, reply_markup=None, kind="copy", ttl=None, dedup=False):
         """Кладёт сообщение в приоритетную очередь отправки (НЕ шлёт напрямую) — чтобы на
         бёрстах не ловить 429 и не терять важное. Реальная отправка — в _tg_sender_worker.
 
         kind="copy" (по умолчанию: копи-алерты/управление/статус) — приоритет, без TTL, не дропается.
         kind="monitor" (наблюдение за чужими) — после копи; с ttl сек дропается, если протух в очереди
-        (мозги копира сходятся к цели независимо от монитор-алертов, поэтому стейл можно выбросить)."""
+        (мозги копира сходятся к цели независимо от монитор-алертов, поэтому стейл можно выбросить).
+
+        dedup=True (ошибки) — одинаковый текст в окне TG_DEDUP_SEC в очередь НЕ кладём, только
+        считаем. Сбой сети повторяется на каждом тике: без этого за час простоя набегают сотни
+        одинаковых сообщений, и все они вываливаются пачкой, когда связь вернулась."""
         tg = self.cfg.get("telegram") or {}
         if not tg.get("enabled") or not self._tg_token or not tg.get("chat_id"):
             return
+        if dedup:
+            key, now = text[:200], time.time()
+            with self.lock:
+                last, n = self._tg_dedup.get(key, (0.0, 0))
+                if now - last < self.TG_DEDUP_SEC:
+                    self._tg_dedup[key] = (last, n + 1)      # копим счётчик, отправку пропускаем
+                    return
+                self._tg_dedup[key] = (now, 0)
+                if len(self._tg_dedup) > 500:                # словарь не растим бесконечно
+                    for k, (ts, _c) in list(self._tg_dedup.items()):
+                        if now - ts > self.TG_DEDUP_SEC * 4:
+                            self._tg_dedup.pop(k, None)
+            if n:
+                text = f"{text}\n\n<i>(+{n} same in the last {self.TG_DEDUP_SEC // 60} min)</i>"
         prio = 1 if kind == "monitor" else 0   # 0 = копи/управление вперёд, 1 = монитор после
         item = (prio, next(self._tg_seq), text, reply_markup, ttl, time.time())
         try:
