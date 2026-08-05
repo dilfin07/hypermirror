@@ -147,6 +147,7 @@ class Controller(EngineMixin, MonitorMixin, StatusMixin, TelegramMixin, JournalM
         # Цель копирования НЕ наследуется между счетами: не-main без своей цели = пусто
         # (а не молча цель main). У каждого счёта своя независимая цель.
         is_main = acct.get("id", "main") == "main"
+        self._tg_token = telegram_token()   # ДО первого log(): иначе ошибка внутри _reload падает в _tg_send и валит старт
         self.cfg["targets"] = resolve_targets(is_main, self._cfg_raw.get("targets"), ov.get("targets"))
         self.hl = HLInfo(HL_TEST if self.cfg.get("network") == "testnet" else HL_MAIN)
         self.account_type = acct.get("type", "futures")      # futures | copy | spot — для type-specific нюансов
@@ -156,16 +157,30 @@ class Controller(EngineMixin, MonitorMixin, StatusMixin, TelegramMixin, JournalM
         self.bn = BinanceFutures(key, secret, network=net)
         self.have_keys = bool(key and secret)
         self._lead_symbols = None                            # кэш whitelist копи-портфеля (ленивая загрузка)
-        try:
-            self.filters = symbol_filters(self.bn.exchange_info())
-        except Exception as e:
-            self.filters = {}
-            self.log(f"[copy] exchangeInfo: {e}", "error")
+        self.filters = {}
+        self._filters_ts = 0      # ts последней ПОПЫТКИ загрузить фильтры (кулдаун ленивого добора)
+        self.ensure_filters()     # сеть на старте может быть не готова (ребут/DNS) — не фатально, доберём позже
         csp = runtime_path(self._acct_file(self.cfg.get("copy_state_file", "copy_state.json")))
         self.copy_state = json.load(open(csp)) if os.path.exists(csp) else {}
         self._load_bot_orders()   # атрибуция и сабпозиция — состояние АКТИВНОГО счёта (важно при переключении)
         self._load_bot_pos()
-        self._tg_token = telegram_token()
+
+    def ensure_filters(self):
+        """Фильтры биржи (шаг лота/цены, minNotional) — без них НЕЛЬЗЯ считать размеры ордеров.
+        На старте их могло не быть (после ребута Pi сеть/DNS поднимаются позже сервиса), поэтому
+        добираем лениво на тиках, не чаще раза в 30с. Возвращает True, если фильтры на руках."""
+        if self.filters:
+            return True
+        if time.time() - self._filters_ts < 30:
+            return False
+        self._filters_ts = time.time()
+        try:
+            self.filters = symbol_filters(self.bn.exchange_info())
+            if self.filters:
+                self.log(f"[copy] exchangeInfo: filters loaded ({len(self.filters)} symbols)", "info", tg=False)
+        except Exception as e:
+            self.log(f"[copy] exchangeInfo: {e}", "error")
+        return bool(self.filters)
 
     def _save_copy_state(self):
         csp = runtime_path(self._acct_file(self.cfg.get("copy_state_file", "copy_state.json")))

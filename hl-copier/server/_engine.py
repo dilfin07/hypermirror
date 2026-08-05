@@ -233,6 +233,10 @@ class EngineMixin:
     def _compute(self, do_apply):
         cfg = self.cfg
         self._stamp_active()                 # счёт активен (троттлится; аудит last_active)
+        # фильтры могли не загрузиться на старте (сеть после ребута) — добираем; без них
+        # размеры/округления ордеров считать НЕЛЬЗЯ (шаг лота, minNotional), поэтому не применяем
+        if not self.ensure_filters():
+            do_apply = False
         mids = {k: float(v) for k, v in self.hl.all_mids().items()}
         include_spot = bool(cfg.get("proportion_include_spot", True))   # честная пропорция: + спот-кэш цели
         copy_builder = not cfg.get("skip_builder_dexs", True)           # опт-ин: копировать builder-dex (TradFi)
