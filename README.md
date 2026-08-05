@@ -160,11 +160,8 @@ All readable on GitHub without running the service:
 
 ## Support the project
 
-hypermirror is free and open-source. If it's useful to you, the easiest way to support the
-author is to **sign up to Binance via the referral link** —
-[**binance.com/register?ref=718442076**](https://www.binance.com/register?ref=718442076)
-(code `718442076`). Binance shares part of *its own* trading fee with the author; it costs
-you nothing and often gives you a fee discount. Forks are welcome to swap in their own code
+Binance referral link: [**binance.com/register?ref=718442076**](https://www.binance.com/register?ref=718442076)
+(code `718442076`). Forks are welcome to swap in their own code
 in [`ui-prototype/src/constants.js`](ui-prototype/src/constants.js).
 
 ---

@@ -116,11 +116,8 @@ python3 tools/serve.py --port 8787 --host 127.0.0.1
 
 ## Поддержать проект
 
-hypermirror бесплатный и открытый. Если он тебе полезен — проще всего поддержать автора,
-**зарегистрировавшись на Binance по реф-ссылке**:
-[**binance.com/register?ref=718442076**](https://www.binance.com/register?ref=718442076)
-(код `718442076`). Binance делится частью *своей* комиссии с автором — тебе это ничего не
-стоит (часто ещё и скидка на комиссию). Форки могут заменить код в
+Реф-ссылка на Binance: [**binance.com/register?ref=718442076**](https://www.binance.com/register?ref=718442076)
+(код `718442076`). Форки могут заменить код в
 [`ui-prototype/src/constants.js`](ui-prototype/src/constants.js).
 
 ---
