@@ -1,6 +1,7 @@
 import { useState } from 'react'
-import { Group, Box, Text, Select, ActionIcon, Avatar, Tooltip, Divider, Button, Badge } from '@mantine/core'
-import { FolderOpen, Gear, Lightning, CaretDown, ListBullets, Play, Stop } from '@phosphor-icons/react'
+import { Group, Text, Select, ActionIcon, Avatar, Tooltip, Divider, Button, Badge } from '@mantine/core'
+import { FolderOpen, Gear, CaretDown, ListBullets, Play, Stop } from '@phosphor-icons/react'
+import { BrandMark } from '../components/BrandMark'
 import TopNav from './TopNav'
 import ServicesLight from './ServicesLight'
 import SwitchAccountModal from './SwitchAccountModal'
@@ -38,11 +39,9 @@ function CopierControl() {
 
 function Brand() {
   return (
-    <Group gap={8} wrap="nowrap">
-      <Box w={28} h={28} style={{ borderRadius: 7, background: 'var(--mantine-color-blue-6)', display: 'grid', placeItems: 'center' }}>
-        <Lightning size={17} weight="fill" color="white" />
-      </Box>
-      <Text fw={700} size="sm">Kielwater</Text>
+    <Group gap={9} wrap="nowrap">
+      <BrandMark size={20} />
+      <Text fw={700} size="sm" style={{ letterSpacing: '-0.02em' }}>Kielwater</Text>
     </Group>
   )
 }
