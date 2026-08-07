@@ -15,7 +15,7 @@ from copier.telegram import send_message, get_updates, answer_callback_query
 
 
 class TelegramMixin:
-    TG_HELP = ("<b>hypermirror commands</b>\n"
+    TG_HELP = ("<b>Kielwater commands</b>\n"
                "/menu — control panel (buttons)\n"
                "/status — state (equity, positions, mode)\n"
                "/sync — 🔧 synchronize the position with the lead\n"
@@ -332,7 +332,7 @@ class TelegramMixin:
     def test_telegram(self):
         tg = self.cfg.get("telegram") or {}
         ok, info = send_message(self._tg_token, tg.get("chat_id"),
-                                "✅ hypermirror test: alerts connected")
+                                "✅ Kielwater test: alerts connected")
         if not ok:
             self.log(f"[tg] test failed: {info}", "error")
         return {"ok": ok, "info": str(info)[:200]}

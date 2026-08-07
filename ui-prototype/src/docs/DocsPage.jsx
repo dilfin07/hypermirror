@@ -72,7 +72,7 @@ function TopBar() {
           <Box w={26} h={26} style={{ borderRadius: 7, background: 'var(--mantine-color-blue-6)', display: 'grid', placeItems: 'center' }}>
             <Lightning size={16} weight="fill" color="white" />
           </Box>
-          <Text fw={700} size="sm">hypermirror</Text>
+          <Text fw={700} size="sm">Kielwater</Text>
           <Divider orientation="vertical" />
           <Text size="sm" c="dimmed">Документация</Text>
         </Group>
@@ -110,7 +110,7 @@ export default function DocsPage() {
       <Group align="flex-start" gap={40} wrap="nowrap" maw={1180} mx="auto" px="lg" py="xl">
         <SideNav />
         <Box style={{ flex: 1, minWidth: 0 }} maw={780}>
-          <Title order={1} fw={700} mb={6}>hypermirror</Title>
+          <Title order={1} fw={700} mb={6}>Kielwater</Title>
           <Text c="dimmed" size="md" mb="xl">Консоль копи-трейдинга: повторяет позиции ведущего трейдера с Hyperliquid на счёте Binance USDT-M.</Text>
 
           <Section id="overview" title="Обзор">
@@ -211,7 +211,7 @@ export default function DocsPage() {
           <Divider my="xl" color={HAIRLINE} />
           <Group gap={8} mb="xl">
             <ThemeIcon variant="light" color="gray" size="sm" radius="xl"><Lightning size={12} weight="fill" /></ThemeIcon>
-            <Text size="xs" c="dimmed">hypermirror — документация интерфейса. Значения параметров приведены как ориентир.</Text>
+            <Text size="xs" c="dimmed">Kielwater — документация интерфейса. Значения параметров приведены как ориентир.</Text>
           </Group>
         </Box>
       </Group>

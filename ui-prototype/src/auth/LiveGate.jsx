@@ -21,7 +21,7 @@ function LoginCard({ onOk }) {
   return (
     <Center h="100vh">
       <Paper withBorder p="xl" w={360} radius="md">
-        <Title order={4} mb={4}>hypermirror</Title>
+        <Title order={4} mb={4}>Kielwater</Title>
         <Badge size="xs" variant="light" color="orange" mb="md">live · боевой Pi</Badge>
         <Stack gap="sm">
           <PasswordInput label="Пароль" value={pw} autoFocus

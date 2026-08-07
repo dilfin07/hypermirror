@@ -1,8 +1,10 @@
-# hypermirror
+# Kielwater
 
 **Copytrade Hyperliquid → Binance USDT-M Futures — with a real risk core.**
 
-hypermirror mirrors a Hyperliquid lead trader's positions onto *your* Binance
+*Kielwater — the wake a ship leaves behind its keel. You trade in the lead's wake.*
+
+Kielwater mirrors a Hyperliquid lead trader's positions onto *your* Binance
 Futures account at an **honest proportion to your capital**, then wraps that with a
 risk layer that exchange copy-trading doesn't give you. It's more than a copier:
 it also ships an address **monitor**, a trading **journal**, a web **dashboard**, and
@@ -15,7 +17,7 @@ trader-**research** tools.
 
 ## Why it's different from exchange copy-trading
 
-Exchange copiers give you a fixed ratio and a dumb `-N%` stop. hypermirror gives you a
+Exchange copiers give you a fixed ratio and a dumb `-N%` stop. Kielwater gives you a
 **risk core** — eight ordered filters between *what the lead does* and *what you do*:
 
 - **Honest proportion** — `your_notional / your_equity ≈ lead_notional / lead_base`,
@@ -69,8 +71,8 @@ account with an API key (futures trading enabled). A Telegram bot is optional (f
 
 ```bash
 # 1. clone
-git clone https://github.com/dilfin07/hypermirror.git
-cd hypermirror/hl-copier
+git clone https://github.com/dilfin07/kielwater.git
+cd kielwater/hl-copier
 
 # 2. python env + deps
 python3 -m venv .venv && source .venv/bin/activate
@@ -168,7 +170,7 @@ in [`ui-prototype/src/constants.js`](ui-prototype/src/constants.js).
 
 ## Disclaimer
 
-Trading leveraged futures is risky and can lose money fast. hypermirror is provided **as-is**,
+Trading leveraged futures is risky and can lose money fast. Kielwater is provided **as-is**,
 with no warranty and no guarantee of profit. You are solely responsible for your keys, your
 configuration, and your trades. Not financial advice.
 

@@ -42,7 +42,7 @@ function Brand() {
       <Box w={28} h={28} style={{ borderRadius: 7, background: 'var(--mantine-color-blue-6)', display: 'grid', placeItems: 'center' }}>
         <Lightning size={17} weight="fill" color="white" />
       </Box>
-      <Text fw={700} size="sm">hypermirror</Text>
+      <Text fw={700} size="sm">Kielwater</Text>
     </Group>
   )
 }

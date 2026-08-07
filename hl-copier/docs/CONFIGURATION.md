@@ -1,6 +1,6 @@
 # Configuration reference
 
-Every setting hypermirror understands: what it does, its default, where it lives, and how
+Every setting Kielwater understands: what it does, its default, where it lives, and how
 it interacts with the others. Settings are stored in `config/config.json` and most are
 editable live from the dashboard's **Settings** panel.
 

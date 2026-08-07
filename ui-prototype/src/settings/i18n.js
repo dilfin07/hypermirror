@@ -6,7 +6,7 @@ export const LOCALES = {
   ru: {
     'nav.journal': 'Журнал', 'nav.monitor': 'Монитор',
     'header.logs': 'Логи', 'header.settings': 'Настройки',
-    'footer.copyright': '© hypermirror, 2026',
+    'footer.copyright': '© Kielwater, 2026',
     'footer.help': 'Помощь', 'footer.docs': 'Документация', 'footer.feedback': 'Обратная связь',
     'footer.support': 'Поддержать',
     'settings.section.keys': 'Счета / API-ключи',
@@ -117,7 +117,7 @@ export const LOCALES = {
   en: {
     'nav.journal': 'Journal', 'nav.monitor': 'Monitor',
     'header.logs': 'Logs', 'header.settings': 'Settings',
-    'footer.copyright': '© hypermirror, 2026',
+    'footer.copyright': '© Kielwater, 2026',
     'footer.help': 'Help', 'footer.docs': 'Docs', 'footer.feedback': 'Feedback',
     'footer.support': 'Support',
     'settings.section.keys': 'Accounts / API keys',

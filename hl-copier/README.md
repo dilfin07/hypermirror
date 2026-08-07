@@ -2,7 +2,7 @@
 
 > 🇷🇺 [Русская версия](README.ru.md).
 
-The "hypermirror" project.
+The "Kielwater" project.
 **Hyperliquid = signal source** (that's where the traders we follow trade).
 **Binance Futures = executor** (Phase 3).
 
