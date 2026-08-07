@@ -12,6 +12,9 @@ trader-**research** tools.
 
 > 🇬🇧 English · [🇷🇺 Русский](README.ru.md) · Full docs read fine on GitHub without
 > running anything — see [Documentation](#documentation).
+>
+> ℹ️ Formerly **hypermirror** — renamed to avoid confusion with an unrelated service of
+> that name. Same project, same authors; old links redirect here.
 
 ---
 
